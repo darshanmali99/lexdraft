@@ -1,0 +1,311 @@
+@import "tailwindcss";
+
+/* =========================================================
+   ROOT THEME
+========================================================= */
+
+:root {
+
+  --bg-primary: #0a0d14;
+  --bg-secondary: #11151f;
+  --bg-tertiary: #171c28;
+
+  --border: rgba(255, 255, 255, 0.06);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+
+  --accent: #4f8cff;
+
+  --success: #22c55e;
+  --danger: #ef4444;
+}
+
+/* =========================================================
+   BASE
+========================================================= */
+
+html,
+body,
+#root {
+
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+
+  margin: 0;
+
+  font-family:
+    Inter,
+    system-ui,
+    sans-serif;
+
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(79, 140, 255, 0.08),
+      transparent 20%
+    ),
+    linear-gradient(
+      180deg,
+      #0a0d14 0%,
+      #0f131b 100%
+    );
+
+  color: var(--text-primary);
+
+  overflow-x: hidden;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+
+  box-sizing: border-box;
+
+  margin: 0;
+  padding: 0;
+}
+
+a {
+
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  border: none;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+input,
+textarea,
+select {
+
+  font-family: inherit;
+
+  outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+
+  color: #64748b;
+}
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+::-webkit-scrollbar {
+
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+
+  background: #0a0d14;
+}
+
+::-webkit-scrollbar-thumb {
+
+  background: #202636;
+
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+
+  background: #2c3447;
+}
+
+/* =========================================================
+   GLASS CARD
+========================================================= */
+
+.glass {
+
+  background:
+    rgba(17, 21, 31, 0.82);
+
+  backdrop-filter: blur(10px);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.05);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+/* =========================================================
+   CARD SYSTEM
+========================================================= */
+
+.card {
+
+  background:
+    rgba(17, 21, 31, 0.92);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.05);
+
+  border-radius: 24px;
+
+  transition:
+    border-color 0.25s ease,
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+
+.card:hover {
+
+  border-color:
+    rgba(79, 140, 255, 0.25);
+
+  transform:
+    translateY(-2px);
+}
+
+/* =========================================================
+   TYPOGRAPHY
+========================================================= */
+
+h1,
+h2,
+h3,
+h4 {
+
+  letter-spacing: -0.03em;
+}
+
+p {
+
+  line-height: 1.7;
+}
+
+.text-muted {
+
+  color: var(--text-secondary);
+}
+
+/* =========================================================
+   PREMIUM INPUTS
+========================================================= */
+
+input,
+textarea,
+select {
+
+  background:
+    rgba(255, 255, 255, 0.03);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.06);
+
+  color: white;
+
+  border-radius: 16px;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+
+  border-color:
+    rgba(79, 140, 255, 0.45);
+
+  background:
+    rgba(255, 255, 255, 0.04);
+}
+
+/* =========================================================
+   BUTTON SYSTEM
+========================================================= */
+
+.btn-primary {
+
+  background:
+    #4f8cff;
+
+  color: white;
+
+  border-radius: 16px;
+
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+
+  background:
+    #6aa0ff;
+}
+
+.btn-secondary {
+
+  background:
+    rgba(255, 255, 255, 0.04);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.06);
+
+  color: white;
+
+  border-radius: 16px;
+}
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
+
+.fade-in {
+
+  animation:
+    fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+
+  from {
+
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 768px) {
+
+  body {
+
+    font-size: 14px;
+  }
+}
