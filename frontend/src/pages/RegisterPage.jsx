@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "../api/axios";
-import toast from "react-hot-toast";
+import api from "../services/api";
+import toast, { Toaster } from "react-hot-toast";
 
 function RegisterPage() {
   const { register, handleSubmit } = useForm();
@@ -10,7 +10,7 @@ function RegisterPage() {
 
   const onSubmit = async (data) => {
     try {
-      await axios.post("/auth/register", data);
+      await api.post("/auth/register", data);
 
       toast.success("Account created");
 
@@ -18,12 +18,13 @@ function RegisterPage() {
     } catch (error) {
       console.error(error);
 
-      toast.error("Registration failed");
+      toast.error(error.response?.data?.message || "Registration failed");
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-6">
+      <Toaster position="top-right" />
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8">
         <h1 className="text-3xl font-bold text-white mb-6">
           Create Account

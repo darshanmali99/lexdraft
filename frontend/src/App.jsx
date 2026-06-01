@@ -7,6 +7,8 @@ import {
 
 import LoginPage from "./pages/LoginPage";
 
+import RegisterPage from "./pages/RegisterPage";
+
 import DashboardLayout from "./layouts/DashboardLayout";
 
 import DashboardPage from "./pages/DashboardPage";
@@ -63,6 +65,11 @@ function App() {
         <Route
           path="/login"
           element={<LoginPage />}
+        />
+
+        <Route
+          path="/register"
+          element={<RegisterPage />}
         />
 
 
