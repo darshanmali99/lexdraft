@@ -19,6 +19,7 @@ import {
   exportDocx,
   previewDocument,
 } from "../services/documentService";
+import ReactMarkdown from "react-markdown";
 
 function DocumentsPage() {
   const [documents, setDocuments] = useState([]);
@@ -483,17 +484,33 @@ function DocumentsPage() {
 
             {/* Modal Content */}
             <div style={{ flex: 1, overflowY: "auto", padding: "28px" }}>
-              <pre
+              <div
                 style={{
-                  whiteSpace: "pre-wrap",
-                  fontSize: "13px",
-                  lineHeight: "1.9",
-                  color: "#c8d3e8",
+                  background: "#ffffff",
+                  color: "#1e293b",
+                  padding: "48px 60px",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 24px rgba(0,0,0,0.15)",
+                  fontSize: "14px",
+                  lineHeight: "1.8",
                   fontFamily: "'Inter', sans-serif",
+                  maxWidth: "800px",
+                  margin: "0 auto",
                 }}
+                className="markdown-preview"
               >
-                {previewContent}
-              </pre>
+                <img 
+                  src="http://localhost:5000/uploads/header.png" 
+                  alt="Document Header" 
+                  style={{ width: "100%", height: "auto", marginBottom: "20px" }}
+                />
+                <ReactMarkdown>{previewContent}</ReactMarkdown>
+                <img 
+                  src="http://localhost:5000/uploads/footer.png" 
+                  alt="Document Footer" 
+                  style={{ width: "100%", height: "auto", marginTop: "20px" }}
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -13,6 +13,7 @@ import {
   TableCell,
   WidthType,
   BorderStyle,
+  ImageRun,
 } from "docx";
 
 import pool from "../config/db.js";
@@ -292,6 +293,26 @@ async function generateDocx(
 
     const children = [];
 
+    // Header Image
+    const headerPath = path.join(process.cwd(), "uploads", "header.png");
+    if (fs.existsSync(headerPath)) {
+      children.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+          children: [
+            new ImageRun({
+              data: fs.readFileSync(headerPath),
+              transformation: {
+                width: 600,
+                height: 100,
+              },
+            }),
+          ],
+        })
+      );
+    }
+
     // Letterhead
     children.push(
       ...buildLetterhead(companySettings)
@@ -421,6 +442,26 @@ async function generateDocx(
         default:
           break;
       }
+    }
+
+    // Footer Image
+    const footerPath = path.join(process.cwd(), "uploads", "footer.png");
+    if (fs.existsSync(footerPath)) {
+      children.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 400 },
+          children: [
+            new ImageRun({
+              data: fs.readFileSync(footerPath),
+              transformation: {
+                width: 600,
+                height: 100,
+              },
+            }),
+          ],
+        })
+      );
     }
 
     const doc = new Document({

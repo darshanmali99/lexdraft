@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Sparkles, ChevronRight, Loader2, FileText, Wand2 } from "lucide-react";
 import { generateDocument } from "../services/documentService";
 import toast from "react-hot-toast";
+import ReactMarkdown from "react-markdown";
 
 const DOC_TYPES = [
   { value: "18efdb97-9abb-48e1-a313-f97bb8ff60b0", label: "NDA — Non-Disclosure Agreement" },
@@ -316,18 +317,32 @@ function GeneratePage() {
             }}
           >
             {generatedDraft ? (
-              <pre
+              <div
                 style={{
-                  whiteSpace: "pre-wrap",
-                  fontSize: "13px",
-                  color: "#d1d9e6",
-                  lineHeight: "1.85",
+                  background: "#ffffff",
+                  color: "#1e293b",
+                  padding: "40px",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                  fontSize: "14px",
+                  lineHeight: "1.8",
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: "400",
                 }}
+                className="markdown-preview"
               >
-                {generatedDraft}
-              </pre>
+                <img 
+                  src="http://localhost:5000/uploads/header.png" 
+                  alt="Document Header" 
+                  style={{ width: "100%", height: "auto", marginBottom: "20px" }}
+                />
+                <ReactMarkdown>{generatedDraft}</ReactMarkdown>
+                <img 
+                  src="http://localhost:5000/uploads/footer.png" 
+                  alt="Document Footer" 
+                  style={{ width: "100%", height: "auto", marginTop: "20px" }}
+                />
+              </div>
             ) : (
               <div
                 style={{
