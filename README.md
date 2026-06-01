@@ -1,3 +1,4 @@
+<img width="1536" height="1024" alt="ChatGPT Image Jun 1, 2026, 11_47_37 AM" src="https://github.com/user-attachments/assets/d5b137a3-51d8-4d8c-beba-8e33c2fba8fa" />
 # LexDraft
 
 ## Project Overview
