@@ -1,750 +1,503 @@
 import { useEffect, useState } from "react";
-
 import toast from "react-hot-toast";
-
 import {
   Search,
   Download,
   Eye,
-  MoreHorizontal,
   Trash2,
   RefreshCcw,
   Loader2,
+  FileText,
+  Plus,
+  X,
 } from "lucide-react";
 
 import {
-
   fetchDocuments,
-
   archiveDocument,
-
   regenerateDocument,
-
   exportDocx,
-
   previewDocument,
-
 } from "../services/documentService";
 
-
 function DocumentsPage() {
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [error, setError] = useState(null);
+  const [previewContent, setPreviewContent] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewTitle, setPreviewTitle] = useState("");
+  const [actionLoading, setActionLoading] = useState(null);
 
-  // ======================================
-  // STATE
-  // ======================================
-
-  const [documents, setDocuments] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [search, setSearch] =
-    useState("");
-
-  const [error, setError] =
-    useState(null);
-
-  const [previewContent, setPreviewContent] =
-    useState("");
-
-  const [previewOpen, setPreviewOpen] =
-    useState(false);
-
-  const [actionLoading, setActionLoading] =
-    useState(null);
-
-
-  // ======================================
-  // LOAD DOCUMENTS
-  // ======================================
-
-  useEffect(() => {
-
-    loadDocuments();
-
-  }, []);
-
+  useEffect(() => { loadDocuments(); }, []);
 
   const loadDocuments = async () => {
-
     try {
-
       setLoading(true);
-
       setError(null);
-
-      const data =
-        await fetchDocuments();
-
-      setDocuments(
-        data.documents || []
-      );
-
+      const data = await fetchDocuments();
+      setDocuments(data.documents || []);
     } catch (error) {
-
-      console.error(
-        "Failed to load documents:",
-        error
-      );
-
-      setError(
-        "Failed to load documents."
-      );
-
+      console.error("Failed to load documents:", error);
+      setError("Failed to load documents.");
     } finally {
-
       setLoading(false);
     }
   };
 
+  const handleArchive = async (id) => {
+    const confirmed = window.confirm("Delete this document? This action cannot be undone.");
+    if (!confirmed) return;
+    try {
+      setActionLoading(id);
+      await archiveDocument(id);
+      toast.success("Document deleted");
+      await loadDocuments();
+    } catch (error) {
+      toast.error("Delete failed");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
-  // ======================================
-  // ARCHIVE DOCUMENT
-  // ======================================
+  const handleRegenerate = async (id) => {
+    try {
+      setActionLoading(id);
+      toast.loading("Regenerating document...", { id: "regen" });
+      await regenerateDocument(id, {});
+      toast.success("Document regenerated", { id: "regen" });
+      await loadDocuments();
+    } catch (error) {
+      toast.error("Regenerate failed", { id: "regen" });
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
-  const handleArchive =
-    async (id) => {
+  const handleDownload = async (doc) => {
+    try {
+      setActionLoading(doc.id);
+      await exportDocx(doc.id, doc.title);
+      toast.success("DOCX downloaded");
+    } catch (error) {
+      toast.error("Download failed");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
-      const confirmed = window.confirm(
-        "Delete this document?"
-      );
+  const handlePreview = async (doc) => {
+    try {
+      setActionLoading(doc.id);
+      const content = await previewDocument(doc.id);
+      setPreviewContent(content);
+      setPreviewTitle(doc.title);
+      setPreviewOpen(true);
+    } catch (error) {
+      toast.error("Preview failed");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
-      if (!confirmed) return;
+  const filteredDocuments = documents.filter((doc) => {
+    const title = doc.title?.toLowerCase() || "";
+    const client = doc.client_name?.toLowerCase() || "";
+    const q = search.toLowerCase();
+    return title.includes(q) || client.includes(q);
+  });
 
-      try {
-
-        setActionLoading(id);
-
-        await archiveDocument(id);
-
-        toast.success(
-          "Document deleted"
-        );
-
-        await loadDocuments();
-
-      } catch (error) {
-
-        console.error(
-          "Archive failed:",
-          error
-        );
-
-        toast.error(
-          "Delete failed"
-        );
-
-      } finally {
-
-        setActionLoading(null);
-      }
-    };
-
-
-  // ======================================
-  // REGENERATE DOCUMENT
-  // ======================================
-
-  const handleRegenerate =
-    async (id) => {
-
-      try {
-
-        setActionLoading(id);
-
-        toast.loading(
-          "Regenerating document...",
-          {
-            id: "regen"
-          }
-        );
-
-        await regenerateDocument(
-          id,
-          {}
-        );
-
-        toast.success(
-          "Document regenerated",
-          {
-            id: "regen"
-          }
-        );
-
-        await loadDocuments();
-
-      } catch (error) {
-
-        console.error(
-          "Regenerate failed:",
-          error
-        );
-
-        toast.error(
-          "Regenerate failed",
-          {
-            id: "regen"
-          }
-        );
-
-      } finally {
-
-        setActionLoading(null);
-      }
-    };
-
-
-  // ======================================
-  // DOWNLOAD DOCX
-  // ======================================
-
-  const handleDownload =
-    async (doc) => {
-
-      try {
-
-        setActionLoading(doc.id);
-
-        await exportDocx(
-
-          doc.id,
-
-          doc.title
-        );
-
-        toast.success(
-          "DOCX downloaded"
-        );
-
-      } catch (error) {
-
-        console.error(error);
-
-        toast.error(
-          "Download failed"
-        );
-
-      } finally {
-
-        setActionLoading(null);
-      }
-    };
-
-
-  // ======================================
-  // PREVIEW DOCUMENT
-  // ======================================
-
-  const handlePreview =
-    async (doc) => {
-
-      try {
-
-        setActionLoading(doc.id);
-
-        const content =
-          await previewDocument(
-            doc.id
-          );
-
-        setPreviewContent(content);
-
-        setPreviewOpen(true);
-
-      } catch (error) {
-
-        console.error(error);
-
-        toast.error(
-          "Preview failed"
-        );
-
-      } finally {
-
-        setActionLoading(null);
-      }
-    };
-
-
-  // ======================================
-  // FILTER DOCUMENTS
-  // ======================================
-
-  const filteredDocuments =
-    documents.filter((doc) => {
-
-      const title =
-        doc.title?.toLowerCase() || "";
-
-      const client =
-        doc.client_name?.toLowerCase() || "";
-
-      return (
-        title.includes(
-          search.toLowerCase()
-        ) ||
-        client.includes(
-          search.toLowerCase()
-        )
-      );
-    });
-
-
-  // ======================================
-  // LOADING STATE
-  // ======================================
+  const getStatusStyle = (status) => {
+    if (status === "approved") return { bg: "rgba(34,197,94,0.10)", color: "#22c55e", border: "rgba(34,197,94,0.20)" };
+    if (status === "draft") return { bg: "rgba(245,158,11,0.10)", color: "#f59e0b", border: "rgba(245,158,11,0.20)" };
+    return { bg: "rgba(79,140,255,0.10)", color: "#7aabff", border: "rgba(79,140,255,0.20)" };
+  };
 
   if (loading) {
-
     return (
-
-      <div className="flex flex-col items-center justify-center py-24">
-
-        <div className="w-10 h-10 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin" />
-
-        <p className="mt-5 text-slate-400 text-sm">
-
-          Loading documents...
-
-        </p>
-
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0" }}>
+        <div
+          style={{
+            width: "40px",
+            height: "40px",
+            border: "3px solid rgba(255,255,255,0.06)",
+            borderTopColor: "#4f8cff",
+            borderRadius: "999px",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+        <p style={{ marginTop: "16px", color: "#8b9ab3", fontSize: "13px" }}>Loading documents...</p>
       </div>
     );
   }
-
-
-  // ======================================
-  // ERROR STATE
-  // ======================================
 
   if (error) {
-
     return (
-
-      <div className="flex flex-col items-center justify-center py-24">
-
-        <p className="text-red-400 text-sm mb-5">
-
-          {error}
-
-        </p>
-
-        <button
-          onClick={loadDocuments}
-          className="btn-primary px-5 h-11 text-sm"
-        >
-
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0" }}>
+        <p style={{ color: "#f87171", fontSize: "14px", marginBottom: "16px" }}>{error}</p>
+        <button onClick={loadDocuments} className="btn-primary" style={{ padding: "0 20px", height: "40px", fontSize: "13px" }}>
           Retry
-
         </button>
-
       </div>
     );
   }
 
-
-  // ======================================
-  // COMPONENT
-  // ======================================
-
   return (
-
-    <div className="space-y-10 fade-in">
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
 
       {/* Header */}
-
-      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
-
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
         <div>
-
-          <h1 className="text-4xl font-semibold tracking-tight">
+          <h1 style={{ fontSize: "22px", fontWeight: "700", color: "#f1f5f9", letterSpacing: "-0.03em" }}>
             Documents
           </h1>
-
-          <p className="text-slate-500 mt-3 max-w-2xl">
-            Manage AI-generated legal agreements,
-            exports,
-            and enterprise legal workflows.
+          <p style={{ fontSize: "13px", color: "#8b9ab3", marginTop: "5px" }}>
+            Manage AI-generated legal agreements, exports, and workflows.
           </p>
-
         </div>
-
         <button
-          onClick={() => {
-            window.location.href =
-              "/documents/new";
-          }}
-          className="btn-primary px-5 h-11 text-sm"
+          onClick={() => window.location.href = "/documents/new"}
+          className="btn-primary"
+          style={{ padding: "0 18px", height: "40px", fontSize: "13px" }}
         >
-
+          <Plus size={14} />
           New Document
-
         </button>
-
       </div>
-
 
       {/* Toolbar */}
-
-      <div className="card p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-
-        <div className="relative w-full lg:w-[340px]">
-
+      <div
+        className="card"
+        style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}
+      >
+        <div style={{ position: "relative", flex: "1", minWidth: "220px", maxWidth: "360px" }}>
           <Search
-            size={16}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+            size={14}
+            style={{
+              position: "absolute",
+              left: "13px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "#4b5a72",
+              pointerEvents: "none",
+            }}
           />
-
           <input
             type="text"
-            placeholder="Search documents..."
+            placeholder="Search by title or client..."
             value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
-            className="w-full h-11 pl-12 pr-4 text-sm"
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              width: "100%",
+              height: "40px",
+              paddingLeft: "36px",
+              paddingRight: "14px",
+              fontSize: "13px",
+            }}
           />
-
         </div>
 
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto" }}>
+          <span style={{ fontSize: "12px", color: "#4b5a72" }}>
+            {filteredDocuments.length} document{filteredDocuments.length !== 1 ? "s" : ""}
+          </span>
+        </div>
       </div>
-
 
       {/* Table */}
-
-      <div className="card overflow-hidden">
-
-        <div className="overflow-x-auto">
-
-          <table className="w-full min-w-[900px]">
-
+      <div className="card" style={{ overflow: "hidden" }}>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", minWidth: "800px", borderCollapse: "collapse" }}>
             <thead>
-
-              <tr className="border-b border-white/5 text-left">
-
-                <th className="px-6 py-5 text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Document
-                </th>
-
-                <th className="px-6 py-5 text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Client
-                </th>
-
-                <th className="px-6 py-5 text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Status
-                </th>
-
-                <th className="px-6 py-5 text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Version
-                </th>
-
-                <th className="px-6 py-5 text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Created
-                </th>
-
-                <th className="px-6 py-5 text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Actions
-                </th>
-
+              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                {["Document", "Client", "Status", "Version", "Created", "Actions"].map((h) => (
+                  <th
+                    key={h}
+                    style={{
+                      padding: "14px 18px",
+                      textAlign: "left",
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      color: "#4b5a72",
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
-
             </thead>
-
             <tbody>
-
               {filteredDocuments.length === 0 ? (
-
                 <tr>
-
-                  <td
-                    colSpan="6"
-                    className="px-6 py-20 text-center"
-                  >
-
-                    <div className="flex flex-col items-center">
-
-                      <p className="text-slate-400 text-sm">
-
-                        No documents yet.
-                        Generate your first one.
-
-                      </p>
-
-                      <button
-                        onClick={() => {
-                          window.location.href =
-                            "/documents/new";
+                  <td colSpan={6} style={{ padding: "64px 20px", textAlign: "center" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+                      <div
+                        style={{
+                          width: "52px",
+                          height: "52px",
+                          borderRadius: "16px",
+                          background: "rgba(255,255,255,0.04)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
-                        className="btn-primary mt-5 px-5 h-11 text-sm"
                       >
-
-                        Generate Document
-
-                      </button>
-
-                    </div>
-
-                  </td>
-
-                </tr>
-
-              ) : (
-
-                filteredDocuments.map((doc) => (
-
-                  <tr
-                    key={doc.id}
-                    className="border-b border-white/5 hover:bg-white/[0.02] transition"
-                  >
-
-                    {/* Title */}
-
-                    <td className="px-6 py-5">
-
+                        <FileText size={22} style={{ color: "#4b5a72" }} />
+                      </div>
                       <div>
-
-                        <p className="text-sm font-medium">
-                          {doc.title}
+                        <p style={{ fontSize: "14px", fontWeight: "600", color: "#8b9ab3" }}>No documents found</p>
+                        <p style={{ fontSize: "12px", color: "#4b5a72", marginTop: "4px" }}>
+                          {search ? "Try a different search term." : "Generate your first legal document to get started."}
                         </p>
-
-                        <p className="text-xs text-slate-500 mt-1">
-                          AI Generated
-                        </p>
-
                       </div>
-
-                    </td>
-
-
-                    {/* Client */}
-
-                    <td className="px-6 py-5 text-sm text-slate-400">
-
-                      {doc.client_name}
-
-                    </td>
-
-
-                    {/* Status */}
-
-                    <td className="px-6 py-5">
-
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                          doc.status === "approved"
-                            ? "bg-green-500/10 text-green-400"
-                            : doc.status === "draft"
-                            ? "bg-yellow-500/10 text-yellow-400"
-                            : "bg-blue-500/10 text-blue-400"
-                        }`}
-                      >
-
-                        {doc.status}
-
-                      </span>
-
-                    </td>
-
-
-                    {/* Version */}
-
-                    <td className="px-6 py-5 text-sm text-slate-400">
-
-                      v{doc.version}
-
-                    </td>
-
-
-                    {/* Created */}
-
-                    <td className="px-6 py-5 text-sm text-slate-500">
-
-                      {new Date(
-                        doc.created_at
-                      ).toLocaleDateString()}
-
-                    </td>
-
-
-                    {/* Actions */}
-
-                    <td className="px-6 py-5">
-
-                      <div className="flex items-center gap-3">
-
-                        {/* Preview */}
-
+                      {!search && (
                         <button
-
-                          onClick={() =>
-                            handlePreview(doc)
-                          }
-
-                          className="w-9 h-9 rounded-xl hover:bg-white/[0.04] flex items-center justify-center transition"
+                          onClick={() => window.location.href = "/documents/new"}
+                          className="btn-primary"
+                          style={{ padding: "0 18px", height: "38px", fontSize: "13px", marginTop: "4px" }}
                         >
+                          <Plus size={13} />
+                          Generate Document
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredDocuments.map((doc) => {
+                  const s = getStatusStyle(doc.status);
+                  const isActioning = actionLoading === doc.id;
+                  return (
+                    <tr
+                      key={doc.id}
+                      style={{
+                        borderBottom: "1px solid rgba(255,255,255,0.05)",
+                        transition: "background 0.15s ease",
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.018)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                    >
+                      {/* Title */}
+                      <td style={{ padding: "16px 18px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <div
+                            style={{
+                              width: "34px",
+                              height: "34px",
+                              borderRadius: "10px",
+                              background: "var(--accent-bg)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <FileText size={14} style={{ color: "#4f8cff" }} />
+                          </div>
+                          <div>
+                            <p style={{ fontSize: "13.5px", fontWeight: "600", color: "#f1f5f9" }}>{doc.title}</p>
+                            <p style={{ fontSize: "11px", color: "#4b5a72", marginTop: "2px" }}>AI Generated</p>
+                          </div>
+                        </div>
+                      </td>
 
-                          {actionLoading === doc.id ? (
+                      {/* Client */}
+                      <td style={{ padding: "16px 18px", fontSize: "13px", color: "#8b9ab3" }}>
+                        {doc.client_name || "—"}
+                      </td>
 
-                            <Loader2
-                              size={16}
-                              className="animate-spin text-slate-400"
+                      {/* Status */}
+                      <td style={{ padding: "16px 18px" }}>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            padding: "3px 10px",
+                            borderRadius: "999px",
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            background: s.bg,
+                            color: s.color,
+                            border: `1px solid ${s.border}`,
+                          }}
+                        >
+                          {doc.status || "draft"}
+                        </span>
+                      </td>
+
+                      {/* Version */}
+                      <td style={{ padding: "16px 18px", fontSize: "13px", color: "#8b9ab3" }}>
+                        <span
+                          style={{
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.07)",
+                            borderRadius: "6px",
+                            padding: "2px 8px",
+                            fontSize: "12px",
+                            fontWeight: "600",
+                          }}
+                        >
+                          v{doc.version || 1}
+                        </span>
+                      </td>
+
+                      {/* Created */}
+                      <td style={{ padding: "16px 18px", fontSize: "12.5px", color: "#4b5a72" }}>
+                        {new Date(doc.created_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </td>
+
+                      {/* Actions */}
+                      <td style={{ padding: "16px 18px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                          {/* Preview */}
+                          <button
+                            onClick={() => handlePreview(doc)}
+                            title="Preview"
+                            className="icon-btn"
+                          >
+                            {isActioning ? (
+                              <Loader2 size={14} style={{ animation: "spin 0.8s linear infinite" }} />
+                            ) : (
+                              <Eye size={14} />
+                            )}
+                          </button>
+
+                          {/* Download */}
+                          <button
+                            onClick={() => handleDownload(doc)}
+                            title="Download DOCX"
+                            className="icon-btn"
+                          >
+                            <Download size={14} />
+                          </button>
+
+                          {/* Regenerate */}
+                          <button
+                            onClick={() => handleRegenerate(doc.id)}
+                            title="Regenerate"
+                            className="icon-btn"
+                          >
+                            <RefreshCcw
+                              size={14}
+                              style={{ animation: isActioning ? "spin 0.8s linear infinite" : "none" }}
                             />
+                          </button>
 
-                          ) : (
-
-                            <Eye
-                              size={16}
-                              className="text-slate-400"
-                            />
-                          )}
-
-                        </button>
-
-
-                        {/* Download */}
-
-                        <button
-
-                          onClick={() =>
-                            handleDownload(doc)
-                          }
-
-                          className="w-9 h-9 rounded-xl hover:bg-white/[0.04] flex items-center justify-center transition"
-                        >
-
-                          <Download
-                            size={16}
-                            className="text-slate-400"
-                          />
-
-                        </button>
-
-
-                        {/* Regenerate */}
-
-                        <button
-                          onClick={() =>
-                            handleRegenerate(doc.id)
-                          }
-                          className="w-9 h-9 rounded-xl hover:bg-white/[0.04] flex items-center justify-center transition"
-                        >
-
-                          <RefreshCcw
-                            size={16}
-                            className={`text-slate-400 ${
-                              actionLoading === doc.id
-                                ? "animate-spin"
-                                : ""
-                            }`}
-                          />
-
-                        </button>
-
-
-                        {/* Delete */}
-
-                        <button
-                          onClick={() =>
-                            handleArchive(doc.id)
-                          }
-                          className="w-9 h-9 rounded-xl hover:bg-red-500/10 flex items-center justify-center transition"
-                        >
-
-                          <Trash2
-                            size={16}
-                            className="text-red-400"
-                          />
-
-                        </button>
-
-
-                        {/* More */}
-
-                        <button className="w-9 h-9 rounded-xl hover:bg-white/[0.04] flex items-center justify-center transition">
-
-                          <MoreHorizontal
-                            size={16}
-                            className="text-slate-400"
-                          />
-
-                        </button>
-
-                      </div>
-
-                    </td>
-
-                  </tr>
-                ))
+                          {/* Delete */}
+                          <button
+                            onClick={() => handleArchive(doc.id)}
+                            title="Delete"
+                            className="icon-btn icon-btn-danger"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
-
             </tbody>
-
           </table>
-
         </div>
-
       </div>
 
-
-      {/* ======================================
-          PREVIEW MODAL
-      ====================================== */}
-
+      {/* Preview Modal */}
       {previewOpen && (
-
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6">
-
-          <div className="w-full max-w-5xl h-[85vh] bg-[#111827] rounded-3xl border border-white/10 overflow-hidden flex flex-col">
-
-            {/* Header */}
-
-            <div className="flex items-center justify-between px-7 py-5 border-b border-white/10">
-
-              <div>
-
-                <h2 className="text-xl font-semibold">
-                  Document Preview
-                </h2>
-
-                <p className="text-sm text-slate-500 mt-1">
-                  AI-generated legal document
-                </p>
-
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 50,
+            background: "rgba(0,0,0,0.75)",
+            backdropFilter: "blur(12px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "24px",
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setPreviewOpen(false); }}
+        >
+          <div
+            className="slide-up"
+            style={{
+              width: "100%",
+              maxWidth: "860px",
+              maxHeight: "88vh",
+              background: "#0d1117",
+              border: "1px solid rgba(255,255,255,0.09)",
+              borderRadius: "24px",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 30px 80px rgba(0,0,0,0.6)",
+            }}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "20px 24px",
+                borderBottom: "1px solid rgba(255,255,255,0.07)",
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    borderRadius: "10px",
+                    background: "var(--accent-bg)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FileText size={15} style={{ color: "#4f8cff" }} />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: "15px", fontWeight: "700", color: "#f1f5f9", letterSpacing: "-0.02em" }}>
+                    {previewTitle || "Document Preview"}
+                  </h2>
+                  <p style={{ fontSize: "11px", color: "#8b9ab3", marginTop: "2px" }}>AI-generated legal document</p>
+                </div>
               </div>
-
               <button
-
-                onClick={() =>
-                  setPreviewOpen(false)
-                }
-
-                className="w-10 h-10 rounded-xl hover:bg-white/[0.05]"
+                onClick={() => setPreviewOpen(false)}
+                className="icon-btn"
+                style={{ flexShrink: 0 }}
               >
-
-                ✕
-
+                <X size={16} />
               </button>
-
             </div>
 
-            {/* Content */}
-
-            <div className="flex-1 overflow-y-auto px-8 py-8">
-
-              <pre className="whitespace-pre-wrap text-sm leading-8 text-slate-300 font-sans">
-
+            {/* Modal Content */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "28px" }}>
+              <pre
+                style={{
+                  whiteSpace: "pre-wrap",
+                  fontSize: "13px",
+                  lineHeight: "1.9",
+                  color: "#c8d3e8",
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              >
                 {previewContent}
-
               </pre>
-
             </div>
-
           </div>
-
         </div>
       )}
-
     </div>
   );
 }
